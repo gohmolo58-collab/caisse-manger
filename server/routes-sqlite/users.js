@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../db');
-const { auth, authorize } = require('../middleware/auth');
+const { auth, authorize } = require('../middleware/auth-sqlite');
 
 // Get all users (admin only)
 router.get('/', auth, authorize('admin'), (req, res) => {

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { auth, authorize } = require('../middleware/auth');
+const { auth, authorize } = require('../middleware/auth-sqlite');
 
 // Get all menu items
 router.get('/', auth, (req, res) => {

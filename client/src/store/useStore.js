@@ -138,7 +138,7 @@ const useStore = create((set, get) => ({
       const response = await axios.put(`${API_URL}/menu/${id}`, data);
       set({ 
         menuItems: get().menuItems.map(item => 
-          item._id === id ? response.data : item
+          (item.id || item._id) === id ? response.data : item
         )
       });
       return response.data;
@@ -151,7 +151,7 @@ const useStore = create((set, get) => ({
   deleteMenuItem: async (id) => {
     try {
       await axios.delete(`${API_URL}/menu/${id}`);
-      set({ menuItems: get().menuItems.filter(item => item._id !== id) });
+      set({ menuItems: get().menuItems.filter(item => (item.id || item._id) !== id) });
       return true;
     } catch (error) {
       set({ error: error.response?.data?.message || 'Failed to delete menu item' });

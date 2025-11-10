@@ -31,10 +31,11 @@ const POS = () => {
   });
 
   const addToCart = (item) => {
-    const existingItem = cart.find(cartItem => cartItem._id === item._id);
+    const itemId = item.id || item._id;
+    const existingItem = cart.find(cartItem => (cartItem.id || cartItem._id) === itemId);
     if (existingItem) {
       setCart(cart.map(cartItem =>
-        cartItem._id === item._id
+        (cartItem.id || cartItem._id) === itemId
           ? { ...cartItem, quantity: cartItem.quantity + 1 }
           : cartItem
       ));
@@ -45,7 +46,7 @@ const POS = () => {
 
   const updateQuantity = (itemId, change) => {
     setCart(cart.map(item => {
-      if (item._id === itemId) {
+      if ((item.id || item._id) === itemId) {
         const newQuantity = item.quantity + change;
         return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
       }
@@ -54,7 +55,7 @@ const POS = () => {
   };
 
   const removeFromCart = (itemId) => {
-    setCart(cart.filter(item => item._id !== itemId));
+    setCart(cart.filter(item => (item.id || item._id) !== itemId));
   };
 
   const clearCart = () => {
@@ -92,7 +93,7 @@ const POS = () => {
         type: orderType,
         tableNumber: orderType === 'dine-in' ? tableNumber : '',
         items: cart.map(item => ({
-          menuItem: item._id,
+          menuItem: item.id || item._id,
           quantity: item.quantity
         })),
         discount: discountAmount,
@@ -169,13 +170,17 @@ const POS = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredItems.map(item => (
                 <button
-                  key={item._id}
+                  key={item.id || item._id}
                   onClick={() => addToCart(item)}
                   className="card hover:shadow-lg transition-shadow cursor-pointer text-left p-4"
                 >
-                  <div className="aspect-square bg-gray-100 dark:bg-dark-700 rounded-lg mb-3 flex items-center justify-center">
+                  <div className="aspect-square bg-gray-100 dark:bg-dark-700 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                      item.image.startsWith('http') ? (
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                      ) : (
+                        <span className="text-4xl">{item.image}</span>
+                      )
                     ) : (
                       <span className="text-4xl">🍽️</span>
                     )}
@@ -237,7 +242,7 @@ const POS = () => {
               </div>
             ) : (
               cart.map(item => (
-                <div key={item._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                <div key={item.id || item._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
                   <div className="flex-1">
                     <p className="font-medium text-sm">{item.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -246,21 +251,21 @@ const POS = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateQuantity(item._id, -1)}
+                      onClick={() => updateQuantity(item.id || item._id, -1)}
                       className="w-7 h-7 rounded-lg bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 flex items-center justify-center"
                     >
                       <Minus size={14} />
                     </button>
                     <span className="w-8 text-center font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item._id, 1)}
+                      onClick={() => updateQuantity(item.id || item._id, 1)}
                       className="w-7 h-7 rounded-lg bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 flex items-center justify-center"
                     >
                       <Plus size={14} />
                     </button>
                   </div>
                   <button
-                    onClick={() => removeFromCart(item._id)}
+                    onClick={() => removeFromCart(item.id || item._id)}
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 size={18} />

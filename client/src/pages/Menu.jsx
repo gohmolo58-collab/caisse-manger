@@ -8,11 +8,13 @@ const Menu = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     category: 'Beverages',
     price: '',
     description: '',
+    image: '',
     available: true
   });
 
@@ -37,13 +39,27 @@ const Menu = () => {
     };
 
     if (editingItem) {
-      await updateMenuItem(editingItem._id, data);
+      await updateMenuItem(editingItem.id || editingItem._id, data);
     } else {
       await createMenuItem(data);
     }
 
     setShowModal(false);
     resetForm();
+    fetchMenuItems(); // Refresh the list
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData({ ...formData, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleEdit = (item) => {
@@ -53,8 +69,10 @@ const Menu = () => {
       category: item.category,
       price: item.price.toString(),
       description: item.description,
+      image: item.image || '',
       available: item.available
     });
+    setImagePreview(item.image || '');
     setShowModal(true);
   };
 
@@ -66,11 +84,13 @@ const Menu = () => {
 
   const resetForm = () => {
     setEditingItem(null);
+    setImagePreview('');
     setFormData({
       name: '',
       category: 'Beverages',
       price: '',
       description: '',
+      image: '',
       available: true
     });
   };
@@ -122,10 +142,14 @@ const Menu = () => {
       {/* Menu Items Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredItems.map(item => (
-          <div key={item._id} className="card">
-            <div className="aspect-square bg-gray-100 dark:bg-dark-700 rounded-lg mb-4 flex items-center justify-center">
+          <div key={item.id || item._id} className="card">
+            <div className="aspect-square bg-gray-100 dark:bg-dark-700 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
               {item.image ? (
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                item.image.startsWith('http') ? (
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                ) : (
+                  <span className="text-6xl">{item.image}</span>
+                )
               ) : (
                 <span className="text-6xl">🍽️</span>
               )}
@@ -158,7 +182,7 @@ const Menu = () => {
                 Edit
               </button>
               <button
-                onClick={() => handleDelete(item._id)}
+                onClick={() => handleDelete(item.id || item._id)}
                 className="flex-1 btn-danger flex items-center justify-center gap-2"
               >
                 <Trash2 size={16} />
@@ -235,6 +259,30 @@ const Menu = () => {
                   className="input"
                   rows="3"
                 />
+              </div>
+
+              <div>
+                <label className="label">Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload an image (JPG, PNG, GIF) or use emoji in name field
+                </p>
+                {imagePreview && (
+                  <div className="mt-3 relative w-32 h-32 bg-gray-100 dark:bg-dark-700 rounded-lg overflow-hidden">
+                    {imagePreview.startsWith('data:image') || imagePreview.startsWith('http') ? (
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-5xl">
+                        {imagePreview}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
